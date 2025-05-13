@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Comparison Tool</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    body { background: #f4f4f4; }
+    .controls { background: #fff; padding: 1rem; display: flex; gap: 1rem; align-items: center; border-radius: 0.5rem; margin-bottom: 1.5rem; }
+    .image-card img { max-width: 100%; border-radius: 0; }
+    .image-card .caption { font-size: 0.95rem; color: #333; margin-top: 0.5rem; word-break: break-all; }
+    .modal-img { max-width: 98vw; max-height: 96vh; border-radius: 0; box-shadow: 0 8px 48px #000b; display: block; margin: auto; }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="controls mb-4">
+      <label class="form-label mb-0">Ratio:
+        <select id="ratio-select" class="form-select form-select-sm"></select>
+      </label>
+      <label class="form-label mb-0">Mode:
+        <select id="mode-select" class="form-select form-select-sm"></select>
+      </label>
+      <label class="form-label mb-0">Size:
+        <select id="size-select" class="form-select form-select-sm"></select>
+      </label>
+    </div>
+    <div class="accordion" id="accordion-gallery"></div>
+  </div>
+  <div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content bg-dark">
+        <div class="modal-header border-0">
+          <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <img id="modal-img" src="" alt="" class="modal-img" />
+          <div id="modal-caption" class="text-white mt-3 fs-5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // List of all images (relative paths)
+    const images = [
+      // cover
+      ...[
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-100-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-970-x-250-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-728-x-90-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-600-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-250-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-160-x-600-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-970-x-90-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-640-x-360-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-336-x-280-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-320-x-480-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-320-x-100-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-320-x-50-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-50-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-100-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-970-x-250-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-728-x-90-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-600-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-250-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-160-x-600-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-970-x-90-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-640-x-360-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-336-x-280-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-320-x-480-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-320-x-100-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-320-x-50-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-50-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-100-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-970-x-250-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-728-x-90-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-600-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-250-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-160-x-600-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-970-x-90-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-640-x-360-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-336-x-280-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-320-x-480-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-320-x-100-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-320-x-50-should-display-the-video-1-snap.png",
+        "cover/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-50-should-display-the-video-1-snap.png"
+      ],
+      // blur
+      ...[
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-100-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-970-x-250-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-728-x-90-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-600-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-250-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-160-x-600-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-970-x-90-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-640-x-360-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-336-x-280-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-320-x-480-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-320-x-100-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-320-x-50-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-50-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-100-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-970-x-250-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-728-x-90-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-600-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-250-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-160-x-600-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-970-x-90-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-640-x-360-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-336-x-280-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-320-x-480-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-320-x-100-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-320-x-50-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-50-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-100-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-970-x-250-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-728-x-90-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-600-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-250-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-160-x-600-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-970-x-90-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-640-x-360-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-336-x-280-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-320-x-480-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-320-x-100-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-320-x-50-should-display-the-video-1-snap.png",
+        "blur/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-50-should-display-the-video-1-snap.png"
+      ],
+      // core
+      ...[
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-100-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-970-x-250-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-728-x-90-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-600-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-250-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-160-x-600-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-970-x-90-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-640-x-360-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-336-x-280-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-320-x-480-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-320-x-100-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-320-x-50-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-4-3-300-x-50-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-100-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-970-x-250-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-728-x-90-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-600-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-250-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-160-x-600-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-970-x-90-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-640-x-360-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-336-x-280-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-320-x-480-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-320-x-100-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-320-x-50-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-9-16-300-x-50-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-100-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-970-x-250-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-728-x-90-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-600-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-250-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-160-x-600-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-970-x-90-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-640-x-360-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-336-x-280-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-320-x-480-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-320-x-100-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-320-x-50-should-display-the-video-1-snap.png",
+        "core/__image_snapshots__/standard-banners-test-js-video-format-standard-banners-ad-16-9-300-x-50-should-display-the-video-1-snap.png"
+      ]
+    ];
+
+    function getImageMeta(path) {
+      // Extract ratio, size, mode from path
+      const match = path.match(/ad-(\d+-\d+)-(\d+-x-\d+)-should/);
+      const ratio = match ? match[1] : '';
+      const size = match ? match[2] : '';
+      let mode = '';
+      if (path.startsWith('cover')) mode = 'cover';
+      if (path.startsWith('blur')) mode = 'blur';
+      if (path.startsWith('core')) mode = 'core';
+      return { ratio, size, mode };
+    }
+
+    function renderImagesByRatio(filteredImages) {
+      const accordion = document.getElementById('accordion-gallery');
+      accordion.innerHTML = '';
+      // Grouper par ratio
+      const groups = {};
+      filteredImages.forEach(path => {
+        const { ratio } = getImageMeta(path);
+        if (!groups[ratio]) groups[ratio] = [];
+        groups[ratio].push(path);
+      });
+      const ratios = Object.keys(groups).sort();
+      ratios.forEach((ratio, i) => {
+        const collapseId = `collapse-${ratio.replace(/[^a-zA-Z0-9]/g, '')}`;
+        // Accordéon Bootstrap
+        const section = document.createElement('div');
+        section.className = 'accordion-item';
+        section.innerHTML = `
+          <h2 class="accordion-header" id="heading-${collapseId}">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="true" aria-controls="${collapseId}">
+              Ratio ${ratio.replace('-', ':')}
+            </button>
+          </h2>
+          <div id="${collapseId}" class="accordion-collapse collapse show" aria-labelledby="heading-${collapseId}">
+            <div class="accordion-body">
+              <div class="row g-3" id="gallery-row-${collapseId}"></div>
+            </div>
+          </div>
+        `;
+        accordion.appendChild(section);
+        // Trier par taille (largeur puis hauteur)
+        const sortedPaths = groups[ratio].slice().sort((a, b) => {
+          const getSize = path => {
+            const match = path.match(/ad-\d+-\d+-(\d+)-x-(\d+)-should/);
+            return match ? [parseInt(match[1], 10), parseInt(match[2], 10)] : [0, 0];
+          };
+          const [aw, ah] = getSize(a);
+          const [bw, bh] = getSize(b);
+          return aw - bw || ah - bh;
+        });
+        const row = section.querySelector(`#gallery-row-${collapseId}`);
+        sortedPaths.forEach(path => {
+          const { ratio, size, mode } = getImageMeta(path);
+          const caption = `${ratio} - ${size} - ${mode}`;
+          const col = document.createElement('div');
+          col.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
+          col.innerHTML = `
+            <div class="card image-card h-100 shadow-sm">
+              <div class="card-header bg-white border-0 text-center fw-semibold text-primary mb-2" style="font-size:1.05rem;">${caption}</div>
+              <img src="${path}" alt="${caption}" class="card-img-top" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#imgModal" />
+              <div class="card-body p-2"></div>
+            </div>
+          `;
+          // Ajout du handler pour la modal
+          col.querySelector('img').onclick = () => openModal(path, caption);
+          row.appendChild(col);
+        });
+      });
+    }
+
+    function getAllOptions(images) {
+      const ratios = new Set();
+      const modes = new Set();
+      const sizes = new Set();
+      images.forEach(path => {
+        const { ratio, size, mode } = getImageMeta(path);
+        if (ratio) ratios.add(ratio);
+        if (mode) modes.add(mode);
+        if (size) sizes.add(size);
+      });
+      return {
+        ratios: Array.from(ratios).sort(),
+        modes: Array.from(modes).sort(),
+        sizes: Array.from(sizes).sort((a, b) => {
+          // Sort by width then height numerically
+          const [aw, ah] = a.split('-x-').map(Number);
+          const [bw, bh] = b.split('-x-').map(Number);
+          return aw - bw || ah - bh;
+        })
+      };
+    }
+
+    function populateFormOptions() {
+      const { ratios, modes, sizes } = getAllOptions(images);
+      const ratioSelect = document.getElementById('ratio-select');
+      const modeSelect = document.getElementById('mode-select');
+      const sizeSelect = document.getElementById('size-select');
+      ratioSelect.innerHTML = '<option value="">All</option>' + ratios.map(r => `<option value="${r}">${r.replace('-', ':')}</option>`).join('');
+      modeSelect.innerHTML = '<option value="">All</option>' + modes.map(m => `<option value="${m}">${m.charAt(0).toUpperCase() + m.slice(1)}</option>`).join('');
+      sizeSelect.innerHTML = '<option value="">All</option>' + sizes.map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+
+    function filterImages() {
+      const ratio = document.getElementById('ratio-select').value;
+      const mode = document.getElementById('mode-select').value;
+      const size = document.getElementById('size-select').value;
+      const filtered = images.filter(path => {
+        const meta = getImageMeta(path);
+        return (!ratio || meta.ratio === ratio)
+          && (!mode || meta.mode === mode)
+          && (!size || meta.size === size);
+      });
+      renderImagesByRatio(filtered);
+    }
+
+    function openModal(src, caption) {
+      const modalImg = document.getElementById('modal-img');
+      const modalCaption = document.getElementById('modal-caption');
+      modalImg.src = src;
+      modalCaption.textContent = caption;
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('imgModal');
+      modal.classList.remove('show');
+      document.getElementById('modal-img').src = '';
+    }
+
+    document.getElementById('imgModal').addEventListener('hidden.bs.modal', closeModal);
+    document.getElementById('imgModal').addEventListener('hide.bs.modal', closeModal);
+
+    function addFilterListeners() {
+      document.getElementById('ratio-select').addEventListener('change', filterImages);
+      document.getElementById('mode-select').addEventListener('change', filterImages);
+      document.getElementById('size-select').addEventListener('change', filterImages);
+    }
+
+    // Initial render
+    populateFormOptions();
+    addFilterListeners();
+    renderImagesByRatio(images);
+  </script>
+</body>
+</html> 
